@@ -9,16 +9,15 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.managedObjectContext) private var managedObjectContext
 
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
+ 
+    
     
     //MARK: - PROPERTIES
-    private var items: FetchedResults<Item>
+  //  private var items: FetchedResults<Item>
     @State private var showingAddTodoView: Bool = false
-    
+
 //MARK: - BODY
     var body: some View {
         NavigationView {
@@ -33,47 +32,18 @@ struct ContentView: View {
              Image(systemName: "plus")
                        })//:ADD BUTTON
                 .sheet(isPresented: $showingAddTodoView, content: {
-                    AddToDoView()
+                    AddToDoView().environment(\.managedObjectContext,self.managedObjectContext)
                 })
             )
         }//NAVIGATION
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+  
 
-            do {
-                try viewContext.save()
-            } catch {
-                  let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                  let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
+  
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
+ 
 #Preview {
     ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
